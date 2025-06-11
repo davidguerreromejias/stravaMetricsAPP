@@ -27,6 +27,28 @@
             <li class="list-group-item">{{ r.name }}</li>
           {% endfor %}
         </ul>
+
+        <h2>Segmentos favoritos</h2>
+        <table class="table table-striped mb-4">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Tu PR</th>
+              <th>KOM</th>
+              <th>Diferencia</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for seg in starred_segments %}
+            <tr>
+              <td>{{ seg.name }}</td>
+              <td>{{ seg.pr_time or 'N/A' }}</td>
+              <td>{{ seg.kom_time or 'N/A' }}</td>
+              <td>{% if seg.kom_diff is not none %}{{ seg.kom_diff }} s{% else %}N/A{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
     <h2 class="mt-4">Actividades recientes</h2>

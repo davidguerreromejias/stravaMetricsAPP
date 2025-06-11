@@ -19,6 +19,13 @@
                         <option value="Other" {% if activity_type == 'Other' %}selected{% endif %}>Otros</option>
                     </select>
                 </form>
+                <form action="{{ url_for('set_year') }}" method="post" class="me-3">
+                    <select class="form-select form-select-sm" name="year" onchange="this.form.submit()">
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
                 {% block nav_items %}{% endblock %}
             </div>
         </div>

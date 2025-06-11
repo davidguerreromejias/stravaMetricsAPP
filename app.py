@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import Flask, redirect, request, session, url_for, render_template
 import requests
 
@@ -27,6 +28,58 @@ def _format_seconds(seconds):
         return f"{h}:{m:02d}:{s:02d}"
     return f"{m}:{s:02d}"
 
+
+def _year_stats(headers, year, activity_type):
+    """Return aggregated stats for a given year and activity type."""
+    start = int(datetime(year, 1, 1).timestamp())
+    end = int(datetime(year + 1, 1, 1).timestamp())
+    page = 1
+    per_page = 50
+    activities = []
+    while True:
+        resp = requests.get(
+            "https://www.strava.com/api/v3/athlete/activities",
+            headers=headers,
+            params={"after": start, "before": end, "page": page, "per_page": per_page},
+        )
+        if resp.status_code != 200:
+            break
+        data = resp.json()
+        if activity_type != "all":
+            data = [a for a in data if a.get("type") == activity_type]
+        activities.extend(data)
+        if len(data) < per_page:
+            break
+        page += 1
+
+    segments = 0
+    prs = 0
+    for a in activities:
+        detail = requests.get(
+            f"https://www.strava.com/api/v3/activities/{a['id']}",
+            headers=headers,
+            params={"include_all_efforts": "true"},
+        )
+        if detail.status_code != 200:
+            continue
+        effs = detail.json().get("segment_efforts", [])
+        segments += len(effs)
+        prs += sum(1 for e in effs if e.get("pr_rank") == 1)
+
+    total_km = sum(a.get("distance", 0) for a in activities) / 1000
+    monthly = [0] * 12
+    for a in activities:
+        dt = datetime.fromisoformat(a["start_date"].replace("Z", "+00:00"))
+        monthly[dt.month - 1] += 1
+
+    return {
+        "count": len(activities),
+        "distance": total_km,
+        "segments": segments,
+        "prs": prs,
+        "monthly_counts": monthly,
+    }
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change_me")
 
@@ -45,12 +98,23 @@ def set_activity_type():
     session["activity_type"] = request.form.get("activity_type", "all")
     return redirect(request.referrer or url_for("index"))
 
+
+@app.route("/set_year", methods=["POST"])
+def set_year():
+    """Store selected year in the session and redirect back."""
+    try:
+        session["year"] = int(request.form.get("year"))
+    except (TypeError, ValueError):
+        session["year"] = datetime.utcnow().year
+    return redirect(request.referrer or url_for("index"))
+
 @app.route("/")
 def index():
     if "athlete" in session:
         athlete = session["athlete"]
 
         activity_type = session.get("activity_type", "all")
+        selected_year = session.get("year", datetime.utcnow().year)
 
         headers = {"Authorization": f"Bearer {session['access_token']}"}
 
@@ -106,6 +170,9 @@ def index():
             seg["pr_time"] = _format_seconds(pr) if pr is not None else None
             seg["kom_time"] = _format_seconds(kom_time) if kom_time is not None else None
 
+        years = list(range(datetime.utcnow().year, datetime.utcnow().year - 5, -1))
+        year_stats = _year_stats(headers, selected_year, activity_type)
+
         return render_template(
             "index.html",
             athlete=athlete,
@@ -115,8 +182,20 @@ def index():
             activities=activities,
             activity_type=activity_type,
             starred_segments=starred_segments,
+            year_stats=year_stats,
+            years=years,
+            selected_year=selected_year,
         )
-    return render_template("index.html", athlete=None, activity_type=session.get("activity_type", "all"))
+    years = list(range(datetime.utcnow().year, datetime.utcnow().year - 5, -1))
+    selected_year = session.get("year", datetime.utcnow().year)
+    return render_template(
+        "index.html",
+        athlete=None,
+        activity_type=session.get("activity_type", "all"),
+        years=years,
+        selected_year=selected_year,
+        year_stats={"count": 0, "distance": 0, "segments": 0, "prs": 0, "monthly_counts": [0]*12},
+    )
 
 @app.route("/login")
 def login():

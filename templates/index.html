@@ -36,13 +36,14 @@
     <div class="tab-content" id="menuTabsContent">
       <div class="tab-pane fade show active" id="stats" role="tabpanel" aria-labelledby="stats-tab">
         <h2>Estadísticas</h2>
+        <h5 class="mb-3">Año {{ selected_year }} - Tipo: {{ activity_type }}</h5>
         <table class="table table-striped">
-          <tr><th>Total actividades en bicicleta</th><td>{{ stats['all_ride_totals']['count'] }}</td></tr>
-          <tr><th>Total distancia en bicicleta</th><td>{{ stats['all_ride_totals']['distance'] }} m</td></tr>
-          <tr><th>Total actividades corriendo</th><td>{{ stats['all_run_totals']['count'] }}</td></tr>
-          <tr><th>Total distancia corriendo</th><td>{{ stats['all_run_totals']['distance'] }} m</td></tr>
+          <tr><th>Actividades hechas</th><td>{{ year_stats.count }}</td></tr>
+          <tr><th>KMs totales</th><td>{{ "%.2f"|format(year_stats.distance) }}</td></tr>
+          <tr><th>Número de segmentos</th><td>{{ year_stats.segments }}</td></tr>
+          <tr><th>PRs superados</th><td>{{ year_stats.prs }}</td></tr>
         </table>
-        <canvas id="distanceChart" height="200"></canvas>
+        <canvas id="monthlyChart" height="200"></canvas>
       </div>
       <div class="tab-pane fade" id="friends" role="tabpanel" aria-labelledby="friends-tab">
         <h2>Amigos</h2>
@@ -105,15 +106,15 @@
 {% block scripts %}
   {% if athlete %}
     <script>
-      const ctx = document.getElementById('distanceChart').getContext('2d');
-      new Chart(ctx, {
+      const mctx = document.getElementById('monthlyChart').getContext('2d');
+      new Chart(mctx, {
         type: 'bar',
         data: {
-          labels: ['Bici', 'Correr'],
+          labels: {{ months|tojson }},
           datasets: [{
-            label: 'Distancia total (m)',
-            data: [{{ stats['all_ride_totals']['distance'] }}, {{ stats['all_run_totals']['distance'] }}],
-            backgroundColor: ['#fc4c02','#007bff']
+            label: 'Actividades por mes',
+            data: {{ year_stats.monthly_counts|tojson }},
+            backgroundColor: '#fc4c02'
           }]
         }
       });

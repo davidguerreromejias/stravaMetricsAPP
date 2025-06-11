@@ -1,6 +1,6 @@
 # stravaMetricsAPP
 
-This is a minimal Flask application that demonstrates logging in to Strava via OAuth and displaying basic athlete information.
+This is a minimal Flask application that demonstrates logging in to Strava via OAuth and displaying athlete data such as recent activities, routes and friends.
 
 ## Setup
 
@@ -13,6 +13,8 @@ This is a minimal Flask application that demonstrates logging in to Strava via O
 
 The provided `setup.sh` script will create a virtual environment and install the requirements automatically.
 
+The application requests the `read`, `profile:read_all` and `activity:read` scopes so it can display basic profile details, your recent activities, routes and friends.
+
 ## Running
 
 ```bash
@@ -20,3 +22,5 @@ The provided `setup.sh` script will create a virtual environment and install the
 ```
 
 This command sets up a virtual environment (if needed), installs the dependencies and starts the server. Once running, open `http://localhost:5000` in your browser and click "Connect with Strava".
+
+After authenticating you will see a dashboard showing your statistics, a list of friends, your routes and your most recent activities.

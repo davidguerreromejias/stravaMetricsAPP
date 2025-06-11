@@ -5,7 +5,7 @@ This is a minimal Flask application that demonstrates logging in to Strava via O
 ## Setup
 
 1. Create a [Strava application](https://www.strava.com/settings/api) and obtain your `Client ID` and `Client Secret`.
-2. Set the following environment variables (you can place them in a `.env` file):
+2. Copy the provided `.env.example` to `.env` and fill in your values. The required variables are:
    - `STRAVA_CLIENT_ID`
    - `STRAVA_CLIENT_SECRET`
    - `STRAVA_REDIRECT_URI` (optional, defaults to `http://localhost:5000/callback`)

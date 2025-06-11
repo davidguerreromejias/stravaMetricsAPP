@@ -10,6 +10,15 @@
         <div class="container">
             <a class="navbar-brand" href="/">Strava Metrics</a>
             <div class="ms-auto d-flex align-items-center">
+                <form action="{{ url_for('set_activity_type') }}" method="post" class="me-3">
+                    <select class="form-select form-select-sm" name="activity_type" onchange="this.form.submit()">
+                        <option value="all" {% if activity_type == 'all' %}selected{% endif %}>Todos</option>
+                        <option value="Ride" {% if activity_type == 'Ride' %}selected{% endif %}>Bicicleta</option>
+                        <option value="Run" {% if activity_type == 'Run' %}selected{% endif %}>Correr</option>
+                        <option value="Tennis" {% if activity_type == 'Tennis' %}selected{% endif %}>Tenis</option>
+                        <option value="Other" {% if activity_type == 'Other' %}selected{% endif %}>Otros</option>
+                    </select>
+                </form>
                 {% block nav_items %}{% endblock %}
             </div>
         </div>

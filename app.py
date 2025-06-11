@@ -38,10 +38,19 @@ OAUTH_AUTHORIZE_URL = "https://www.strava.com/oauth/authorize"
 OAUTH_TOKEN_URL = "https://www.strava.com/oauth/token"
 ATHLETE_URL = "https://www.strava.com/api/v3/athlete"
 
+
+@app.route("/set_activity_type", methods=["POST"])
+def set_activity_type():
+    """Store selected activity type in the session and redirect back."""
+    session["activity_type"] = request.form.get("activity_type", "all")
+    return redirect(request.referrer or url_for("index"))
+
 @app.route("/")
 def index():
     if "athlete" in session:
         athlete = session["athlete"]
+
+        activity_type = session.get("activity_type", "all")
 
         headers = {"Authorization": f"Bearer {session['access_token']}"}
 
@@ -67,6 +76,9 @@ def index():
             headers=headers,
             params={"per_page": 5},
         ).json()
+
+        if activity_type != "all":
+            activities = [a for a in activities if a.get("type") == activity_type]
 
         starred_segments = requests.get(
             "https://www.strava.com/api/v3/segments/starred",
@@ -101,9 +113,10 @@ def index():
             friends=friends,
             routes=routes,
             activities=activities,
+            activity_type=activity_type,
             starred_segments=starred_segments,
         )
-    return render_template("index.html", athlete=None)
+    return render_template("index.html", athlete=None, activity_type=session.get("activity_type", "all"))
 
 @app.route("/login")
 def login():

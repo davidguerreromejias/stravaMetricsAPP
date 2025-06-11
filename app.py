@@ -2,6 +2,31 @@ import os
 from flask import Flask, redirect, request, session, url_for, render_template
 import requests
 
+
+def _parse_time_str(t):
+    """Convert a time string like '1:23' or '1:02:03' to seconds."""
+    if not t:
+        return None
+    parts = [int(p) for p in t.split(":")]
+    if len(parts) == 3:
+        h, m, s = parts
+    elif len(parts) == 2:
+        h, m, s = 0, parts[0], parts[1]
+    else:
+        h, m, s = 0, 0, parts[0]
+    return h * 3600 + m * 60 + s
+
+
+def _format_seconds(seconds):
+    """Return a hh:mm:ss string for a number of seconds."""
+    if seconds is None:
+        return None
+    h, rem = divmod(int(seconds), 3600)
+    m, s = divmod(rem, 60)
+    if h:
+        return f"{h}:{m:02d}:{s:02d}"
+    return f"{m}:{s:02d}"
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change_me")
 
@@ -43,6 +68,35 @@ def index():
             params={"per_page": 5},
         ).json()
 
+        starred_segments = requests.get(
+            "https://www.strava.com/api/v3/segments/starred",
+            headers=headers,
+            params={"per_page": 5},
+        ).json()
+
+        for seg in starred_segments:
+            pr = None
+            kom_time = None
+            if seg.get("athlete_segment_stats"):
+                pr = seg["athlete_segment_stats"].get("pr_elapsed_time")
+            kom_str = None
+            if seg.get("xoms"):
+                kom_str = seg["xoms"].get("kom") or seg["xoms"].get("qom") or seg["xoms"].get("overall")
+            if kom_str:
+                kom_time = _parse_time_str(kom_str)
+            if pr is not None and kom_time is not None:
+                seg["kom_diff"] = kom_time - pr
+            else:
+                seg["kom_diff"] = None
+            if pr is not None:
+                seg["pr_time"] = _format_seconds(pr)
+            else:
+                seg["pr_time"] = None
+            if kom_time is not None:
+                seg["kom_time"] = _format_seconds(kom_time)
+            else:
+                seg["kom_time"] = kom_str
+
         return render_template(
             "index.html",
             athlete=athlete,
@@ -50,6 +104,7 @@ def index():
             friends=friends,
             routes=routes,
             activities=activities,
+            starred_segments=starred_segments,
         )
     return render_template("index.html", athlete=None)
 

@@ -88,6 +88,20 @@ def index():
 
             if pr is not None and kom_time is not None:
                 seg["kom_diff"] = pr - kom_time
+            if seg.get("athlete_segment_stats"):
+                pr = seg["athlete_segment_stats"].get("pr_elapsed_time")
+
+            # Try to fetch KOM time via leaderboard
+            lb = requests.get(
+                f"https://www.strava.com/api/v3/segments/{seg['id']}/leaderboard",
+                headers=headers,
+                params={"per_page": 1},
+            ).json()
+            if lb.get("entries"):
+                kom_time = lb["entries"][0].get("elapsed_time")
+
+            if pr is not None and kom_time is not None:
+                seg["kom_diff"] = abs(pr - kom_time)
             else:
                 seg["kom_diff"] = None
 

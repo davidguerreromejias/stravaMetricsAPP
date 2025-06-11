@@ -77,6 +77,17 @@ def index():
         for seg in starred_segments:
             pr = None
             kom_time = None
+
+            stats = seg.get("athlete_segment_stats") or {}
+            pr = stats.get("pr_elapsed_time")
+
+            xoms = seg.get("xoms") or {}
+            kom_str = xoms.get("kom") or xoms.get("qom") or xoms.get("cr")
+            if kom_str:
+                kom_time = _parse_time_str(kom_str)
+
+            if pr is not None and kom_time is not None:
+                seg["kom_diff"] = pr - kom_time
             if seg.get("athlete_segment_stats"):
                 pr = seg["athlete_segment_stats"].get("pr_elapsed_time")
 

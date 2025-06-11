@@ -79,23 +79,23 @@ def index():
             kom_time = None
             if seg.get("athlete_segment_stats"):
                 pr = seg["athlete_segment_stats"].get("pr_elapsed_time")
-            kom_str = None
-            if seg.get("xoms"):
-                kom_str = seg["xoms"].get("kom") or seg["xoms"].get("qom") or seg["xoms"].get("overall")
-            if kom_str:
-                kom_time = _parse_time_str(kom_str)
+
+            # Try to fetch KOM time via leaderboard
+            lb = requests.get(
+                f"https://www.strava.com/api/v3/segments/{seg['id']}/leaderboard",
+                headers=headers,
+                params={"per_page": 1},
+            ).json()
+            if lb.get("entries"):
+                kom_time = lb["entries"][0].get("elapsed_time")
+
             if pr is not None and kom_time is not None:
-                seg["kom_diff"] = kom_time - pr
+                seg["kom_diff"] = abs(pr - kom_time)
             else:
                 seg["kom_diff"] = None
-            if pr is not None:
-                seg["pr_time"] = _format_seconds(pr)
-            else:
-                seg["pr_time"] = None
-            if kom_time is not None:
-                seg["kom_time"] = _format_seconds(kom_time)
-            else:
-                seg["kom_time"] = kom_str
+
+            seg["pr_time"] = _format_seconds(pr) if pr is not None else None
+            seg["kom_time"] = _format_seconds(kom_time) if kom_time is not None else None
 
         return render_template(
             "index.html",

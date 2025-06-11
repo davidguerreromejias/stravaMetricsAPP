@@ -83,6 +83,22 @@ def _year_stats(headers, year, activity_type):
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change_me")
 
+# Month names for stats charts
+MONTHS = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+]
+
 STRAVA_CLIENT_ID = os.environ.get("STRAVA_CLIENT_ID")
 STRAVA_CLIENT_SECRET = os.environ.get("STRAVA_CLIENT_SECRET")
 STRAVA_REDIRECT_URI = os.environ.get("STRAVA_REDIRECT_URI", "http://localhost:5000/callback")
@@ -172,6 +188,7 @@ def index():
 
         years = list(range(datetime.utcnow().year, datetime.utcnow().year - 5, -1))
         year_stats = _year_stats(headers, selected_year, activity_type)
+        months = MONTHS
 
         return render_template(
             "index.html",
@@ -185,9 +202,11 @@ def index():
             year_stats=year_stats,
             years=years,
             selected_year=selected_year,
+            months=months,
         )
     years = list(range(datetime.utcnow().year, datetime.utcnow().year - 5, -1))
     selected_year = session.get("year", datetime.utcnow().year)
+    months = MONTHS
     return render_template(
         "index.html",
         athlete=None,
@@ -195,6 +214,7 @@ def index():
         years=years,
         selected_year=selected_year,
         year_stats={"count": 0, "distance": 0, "segments": 0, "prs": 0, "monthly_counts": [0]*12},
+        months=months,
     )
 
 @app.route("/login")

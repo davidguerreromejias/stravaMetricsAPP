@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% if athlete %}
+    <h1 class="mb-4">Bienvenido {{ athlete.firstname }} {{ athlete.lastname }}</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <h2>Estadísticas</h2>
+        <table class="table table-striped">
+          <tr><th>Total actividades en bicicleta</th><td>{{ stats['all_ride_totals']['count'] }}</td></tr>
+          <tr><th>Total distancia en bicicleta</th><td>{{ stats['all_ride_totals']['distance'] }} m</td></tr>
+          <tr><th>Total actividades corriendo</th><td>{{ stats['all_run_totals']['count'] }}</td></tr>
+          <tr><th>Total distancia corriendo</th><td>{{ stats['all_run_totals']['distance'] }} m</td></tr>
+        </table>
+        <canvas id="distanceChart" height="200"></canvas>
+      </div>
+      <div class="col-md-6">
+        <h2>Amigos</h2>
+        <ul class="list-group mb-4">
+          {% for f in friends %}
+            <li class="list-group-item">{{ f.firstname }} {{ f.lastname }}</li>
+          {% endfor %}
+        </ul>
+        <h2>Rutas</h2>
+        <ul class="list-group mb-4">
+          {% for r in routes %}
+            <li class="list-group-item">{{ r.name }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <h2 class="mt-4">Actividades recientes</h2>
+    <ul class="list-group mb-4">
+      {% for a in activities %}
+        <li class="list-group-item">{{ a.name }} - {{ a.distance }} m</li>
+      {% endfor %}
+    </ul>
+    <a class="btn btn-danger" href="/logout">Cerrar sesión</a>
+  {% else %}
+    <h1 class="text-center">Bienvenido a Strava Metrics</h1>
+    <p class="text-center">Conecta tu cuenta para comenzar</p>
+    <div class="text-center">
+      <a class="btn btn-warning" href="/login">Acceder con Strava</a>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  {% if athlete %}
+    <script>
+      const ctx = document.getElementById('distanceChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Bici', 'Correr'],
+          datasets: [{
+            label: 'Distancia total (m)',
+            data: [{{ stats['all_ride_totals']['distance'] }}, {{ stats['all_run_totals']['distance'] }}],
+            backgroundColor: ['#fc4c02','#007bff']
+          }]
+        }
+      });
+    </script>
+  {% endif %}
+{% endblock %}

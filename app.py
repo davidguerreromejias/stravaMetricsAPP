@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, request, session, url_for, render_template_string
+from flask import Flask, redirect, request, session, url_for, render_template
 import requests
 
 app = Flask(__name__)
@@ -43,83 +43,15 @@ def index():
             params={"per_page": 5},
         ).json()
 
-        return render_template_string(
-            """
-            <!doctype html>
-            <html lang=\"es\">
-            <head>
-                <meta charset=\"utf-8\">
-                <title>Strava Metrics</title>
-                <style>
-                    body {font-family: Arial, sans-serif; text-align: center; padding-top: 40px;}
-                    table {margin: auto; border-collapse: collapse; width: 80%;}
-                    th, td {border: 1px solid #ddd; padding: 8px;}
-                    th {background-color: #f2f2f2;}
-                    .btn {background-color: #FC4C02; color: white; padding: 10px 20px; text-decoration: none; font-size: 16px; border-radius: 4px;}
-                </style>
-            </head>
-            <body>
-                <h1>Bienvenido {{athlete['firstname']}} {{athlete['lastname']}}</h1>
-                <p>Strava ID: {{athlete['id']}}</p>
-                <h2>Estadísticas</h2>
-                <table>
-                    <tr><th>Total actividades en bicicleta</th><td>{{stats['all_ride_totals']['count']}}</td></tr>
-                    <tr><th>Total distancia en bicicleta</th><td>{{stats['all_ride_totals']['distance']}} m</td></tr>
-                    <tr><th>Total actividades corriendo</th><td>{{stats['all_run_totals']['count']}}</td></tr>
-                    <tr><th>Total distancia corriendo</th><td>{{stats['all_run_totals']['distance']}} m</td></tr>
-                </table>
-
-                <h2>Amigos</h2>
-                <ul>
-                    {% for f in friends %}
-                        <li>{{f['firstname']}} {{f['lastname']}}</li>
-                    {% endfor %}
-                </ul>
-
-                <h2>Rutas</h2>
-                <ul>
-                    {% for r in routes %}
-                        <li>{{r['name']}}</li>
-                    {% endfor %}
-                </ul>
-
-                <h2>Actividades recientes</h2>
-                <ul>
-                    {% for a in activities %}
-                        <li>{{a['name']}} - {{a['distance']}} m</li>
-                    {% endfor %}
-                </ul>
-
-                <a class=\"btn\" href=\"/logout\">Cerrar sesión</a>
-            </body>
-            </html>
-            """,
+        return render_template(
+            "index.html",
             athlete=athlete,
             stats=stats,
             friends=friends,
             routes=routes,
             activities=activities,
         )
-    return render_template_string(
-        """
-        <!doctype html>
-        <html lang=\"es\">
-        <head>
-            <meta charset=\"utf-8\">
-            <title>Strava Metrics</title>
-            <style>
-                body {font-family: Arial, sans-serif; text-align: center; padding-top: 100px;}
-                .btn {background-color: #FC4C02; color: white; padding: 15px 32px; text-decoration: none; font-size: 16px; border-radius: 4px;}
-            </style>
-        </head>
-        <body>
-            <h1>Bienvenido a Strava Metrics</h1>
-            <p>Conecta tu cuenta para comenzar</p>
-            <a class=\"btn\" href=\"/login\">Acceder con Strava</a>
-        </body>
-        </html>
-        """
-    )
+    return render_template("index.html", athlete=None)
 
 @app.route("/login")
 def login():

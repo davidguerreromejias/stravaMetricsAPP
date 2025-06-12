@@ -26,6 +26,13 @@
                         {% endfor %}
                     </select>
                 </form>
+                <form action="{{ url_for('set_segments_count') }}" method="post" class="me-3">
+                    <select class="form-select form-select-sm" name="segments_count" onchange="this.form.submit()">
+                        {% for n in [5, 10, 20] %}
+                        <option value="{{ n }}" {% if segments_count == n %}selected{% endif %}>{{ n }} segs</option>
+                        {% endfor %}
+                    </select>
+                </form>
                 {% block nav_items %}{% endblock %}
             </div>
         </div>

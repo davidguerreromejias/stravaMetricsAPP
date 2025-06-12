@@ -24,3 +24,5 @@ The application requests the `read`, `profile:read_all` and `activity:read` scop
 This command sets up a virtual environment (if needed), installs the dependencies and starts the server. Once running, open `http://localhost:5000` in your browser and click "Connect with Strava".
 
 After authenticating you will see a modern dashboard built with Bootstrap and Chart.js displaying your statistics, a list of friends, your routes and your most recent activities.
+
+You can also choose how many of your starred segments are shown using the selector in the navigation bar.

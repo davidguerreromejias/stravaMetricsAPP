@@ -181,7 +181,7 @@ def index():
             pr = None
             kom_time = None
 
-            pr = seg.get("athlete_pr_effort", {}).get("pr_elapsed_time")
+            pr = seg.get("athlete_segment_stats", {}).get("pr_elapsed_time")
 
             xoms = seg.get("xoms") or {}
             kom_str = xoms.get("kom") or xoms.get("qom") or xoms.get("cr")

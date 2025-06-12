@@ -124,6 +124,16 @@ def set_year():
         session["year"] = datetime.utcnow().year
     return redirect(request.referrer or url_for("index"))
 
+
+@app.route("/set_segments_count", methods=["POST"])
+def set_segments_count():
+    """Store number of starred segments to display and redirect back."""
+    try:
+        session["segments_count"] = int(request.form.get("segments_count", 5))
+    except (TypeError, ValueError):
+        session["segments_count"] = 5
+    return redirect(request.referrer or url_for("index"))
+
 @app.route("/")
 def index():
     if "athlete" in session:
@@ -160,18 +170,18 @@ def index():
         if activity_type != "all":
             activities = [a for a in activities if a.get("type") == activity_type]
 
+        segments_count = session.get("segments_count", 5)
         starred_segments = requests.get(
             "https://www.strava.com/api/v3/segments/starred",
             headers=headers,
-            params={"per_page": 5},
+            params={"per_page": segments_count},
         ).json()
 
         for seg in starred_segments:
             pr = None
             kom_time = None
 
-            seg_stats = seg.get("athlete_segment_stats") or {}
-            pr = seg_stats.get("pr_elapsed_time")
+            pr = seg.get("athlete_segment_stats", {}).get("pr_elapsed_time")
 
             xoms = seg.get("xoms") or {}
             kom_str = xoms.get("kom") or xoms.get("qom") or xoms.get("cr")
@@ -203,10 +213,12 @@ def index():
             years=years,
             selected_year=selected_year,
             months=months,
+            segments_count=segments_count,
         )
     years = list(range(datetime.utcnow().year, datetime.utcnow().year - 5, -1))
     selected_year = session.get("year", datetime.utcnow().year)
     months = MONTHS
+    segments_count = session.get("segments_count", 5)
     return render_template(
         "index.html",
         athlete=None,
@@ -215,6 +227,7 @@ def index():
         selected_year=selected_year,
         year_stats={"count": 0, "distance": 0, "segments": 0, "prs": 0, "monthly_counts": [0]*12},
         months=months,
+        segments_count=segments_count,
     )
 
 @app.route("/login")

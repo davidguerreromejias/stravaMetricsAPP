@@ -26,3 +26,5 @@ This command sets up a virtual environment (if needed), installs the dependencie
 After authenticating you will see a modern dashboard built with Bootstrap and Chart.js displaying your statistics, a list of friends, your routes and your most recent activities.
 
 You can also choose how many of your starred segments are shown using the selector in the navigation bar.
+
+For each starred segment we show your PR time obtained from `athlete_segment_stats.pr_elapsed_time` and the difference to the KOM time, if available.
